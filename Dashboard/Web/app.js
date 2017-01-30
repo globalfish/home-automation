@@ -1,9 +1,7 @@
 
 var c1 = document.getElementById("floorPlan"); // static image
-//var c2 = document.getElementById("Values"); // draw values on this canvas
-
 var ctx1 = c1.getContext("2d");
-//var ctx2 = c2.getContext("2d");
+
 ctx1.scale(1.5,1.5);
 // load icon images
 var imgLight = new Image();
@@ -19,22 +17,18 @@ imgOpen.src = "doorOpen.png";
 var imgClosed = new Image();
 imgClosed.src = "doorClosed.png";
 
-
-
 // websocket callbacks
 window.onload = function() {
 
-    
-// draw out the floor outlines
-var floor1Name = "Basement Level";
-drawFloor1(10,10, floor1Name);
-var floor2Name = "Family Level";
-drawFloor2(200,220, floor2Name);
-var floor3Name = "Bedroom Level";
-drawFloor3(430,10, floor3Name);
     var d = document.getElementById("floorPlan");
     var ctx = d.getContext("2d");
-
+    
+    // draw out the floor outlines
+    drawFloor1(10,10, "Basement Level");
+    drawFloor2(200,220, "Family Level");
+    drawFloor3(430,10, "Bedroom Level");
+    drawLegend(ctx, 10, 300);
+  
     // one socket per update for each sensor value
     // sockets named by Sensor Id (s01...) and measurement (...t01, m01)
     var s01 = new WebSocket("ws://192.168.86.36:1880/sensorData");
@@ -55,7 +49,7 @@ drawFloor3(430,10, floor3Name);
 	ctx.fillStyle = "black";
 	var x1, y1;
 	x1 = 50;
-	y1 = 400; //default
+	y1 = 220; //default
 	switch (sensorData.SensorId) {
 	case "1":
 	    switch (sensorData.Measurement) {
@@ -96,8 +90,8 @@ drawFloor3(430,10, floor3Name);
 		y1 = 370;
 		break;
 	    case "motion":
-		x1 = 400;
-		y1 = 440;
+		x1 = 425;
+		y1 = 395;
 		if( sensorData.Value == "1")
 		    drawMotionOn(ctx, 7800, 7500);
 		else
@@ -218,7 +212,7 @@ drawFloor3(430,10, floor3Name);
 	    }
     	    break;
 	}
-	ctx.clearRect(x1,y1-15,30,20);
+	ctx.clearRect(x1,y1-15,20,20);
 	if( sensorData.Measurement.substring(0,4) != "door" &&
 	    sensorData.Measurement.substring(0,6) != "motion") {
 	    ctx.fillText( sensorData.Value, x1, y1);
@@ -236,6 +230,7 @@ function drawFloor1(x, y, caption) {
     ctx1.lineTo(x+width,y+depth);;
     ctx1.lineTo(x+0,y+depth);
     ctx1.lineTo(x+0,y+0);
+    ctx1.strokeStyle = "LightBlue";
     ctx1.stroke();
 
     ctx1.scale(0.05,0.05);
@@ -271,6 +266,7 @@ function drawFloor2(x, y, caption) {
     ctx1.moveTo(x+width,y+depth/2);
     ctx1.lineTo(x+width/2+width/8,y+depth/2);
     ctx1.lineTo(x+width/2+width/8,y+depth);
+    ctx1.strokeStyle = "LightBlue";
     ctx1.stroke();
     
     ctx1.scale(0.05,0.05);
@@ -294,7 +290,8 @@ function drawFloor2(x, y, caption) {
     ctx1.font = "24pt Calibri";
     ctx1.fillStyle = "LightGray";
     ctx1.fillText(caption, x+20,y+depth*0.3);
-    
+    ctx1.font = "16pt Calibri";
+    ctx1.fillText("Garage", x+253, y+depth*0.95);
 }
 
 function drawFloor3(x, y, caption) {
@@ -309,6 +306,7 @@ function drawFloor3(x, y, caption) {
     ctx1.lineTo(x+width-200,y+depth);
     ctx1.lineTo(x+0,y+depth);
     ctx1.lineTo(x+0,y+0);
+    ctx1.strokeStyle = "LightBlue";
     ctx1.stroke();
 
     ctx1.scale(0.05,0.05);
@@ -323,6 +321,36 @@ function drawFloor3(x, y, caption) {
     ctx1.font = "24pt Calibri";
     ctx1.fillStyle = "LightGray";
     ctx1.fillText(caption, x+20,y+depth*0.3);
+}
+
+function drawLegend(ctx, x, y) {
+
+    ctx.font = "10pt Calibri";
+    ctx.fillStyle = "DimGray";
+    ctx.fillText("Legend", x, y);
+    ctx.moveTo(x, y+10);
+    ctx.lineTo(x+150, y+10);
+    ctx.lineTo(x+150, y+180);
+    ctx.lineTo(x, y+180);
+    ctx.lineTo(x, y+10);
+    ctx.strokeStyle = "LightBlue";
+    ctx.stroke();
+
+    ctx.scale(0.04,0.04); 
+    ctx.drawImage(imgTemp, x+300, (y+20)*25);
+    ctx.drawImage(imgLight, x+300, (y+45)*25);
+    ctx.drawImage(imgOpen, x+300, (y+70)*25);
+    ctx.drawImage(imgClosed, x+300, (y+95)*25);
+    ctx.drawImage(imgMotionOff, x+300, (y+120)*25);
+    ctx.drawImage(imgMotionOn, x+300, (y+145)*25);
+    ctx.scale(25,25);
+
+    ctx.fillText("Temperature (°F)", x+30,y+35);
+    ctx.fillText("Light level (0-20)", x+30,y+60);
+    ctx.fillText("Door Open", x+30,y+85);
+    ctx.fillText("Door Closed", x+30,y+110);
+    ctx.fillText("No Motion", x+30,y+135);
+    ctx.fillText("Motion Sensed", x+30,y+160);
 }
 
 function drawDoorOpen(ctx, x, y) {
