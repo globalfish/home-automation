@@ -121,20 +121,6 @@ void loop() {
     prevLightLevel = lightLevel;
   }
 
-
-  // get light level from LDR2
-  lightLevel2 = readLightLevel(ldr2Pin);
-  char temp2[20];
-  dtostrf(lightLevel2, 9, 2, temp2);
-  if ( millis() - lightSampler2Timer > timer2  || // timer triggered, OR
-       abs( lightLevel2 - prevLightLevel2) > 100) { // sudden change in light intensity
-    jsonObj1[0] = '\0';
-    constructJSONObj("light2", temp2, jsonObj1);
-    sendDataOverSerial(jsonObj1); 
-    lightSampler2Timer = millis();
-    prevLightLevel2 = lightLevel2;
-  }
-
   // check if door is open
   // get door sensor open reading at any time
   doorClosedState = digitalRead(doorSensorPin);
