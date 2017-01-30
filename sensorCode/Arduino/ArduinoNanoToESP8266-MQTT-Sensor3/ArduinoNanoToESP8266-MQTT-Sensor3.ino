@@ -41,8 +41,7 @@ long distance = 0;
 char jsonObj1[256];
 
 float temperature, prevTemperature = 0.0, lightLevel, prevLightLevel1, prevLightLevel2;
-
-int doorClosedState = 1; // state to track if door is open or not
+int motionLevel, prevMotionLevel = 0, prevMotionLevel2 = 0;
 
 // Setup a oneWire instance to communicate with any OneWire devices
 // (not just Maxim/Dallas temperature ICs)
@@ -120,24 +119,13 @@ void loop() {
   lightLevel = readLightLevel(ldr2Pin);
   char temp2[20];
   dtostrf(lightLevel, 9, 2, temp2);
-  if ( millis() - lightSampler2Timer > timer2 ) {
+  if ( millis() - lightSampler2Timer > timer2 || //timer triggered, OR
+    abs( lightLevel - prevLightLevel2) > 100) {  // sudden change in light intensity
     jsonObj1[0] = '\0';
     constructJSONObj("light2", temp2, jsonObj1);
     sendDataOverSerial(jsonObj1);
     lightSampler2Timer = millis();
-  }
-
-  // check if door is open
-  // get door sensor open reading at any time
-  int sensorVal = digitalRead(doorSensorPin);
-  delay(1);
-  if (  sensorVal != doorClosedState) { // only trigger this when state changes
-    char temp3[3];
-    sprintf(temp3, "%d", sensorVal);
-    jsonObj1[0] = '\0';
-    constructJSONObj("door", temp3, jsonObj1);
-    sendDataOverSerial(jsonObj1);
-    doorClosedState = sensorVal;
+    prevLightLevel2 = lightLevel;
   }
   
   // get distance reading from PING sensor
@@ -159,16 +147,30 @@ void loop() {
 
 
   // get proximity reading from PIR
-  int motionLevel = digitalRead(motionPin);
-  if ( (motionLevel == 1) || (millis() - motionSamplerTimer > timer2 )) {
+  motionLevel = digitalRead(motionPin);
+  if ( millis() - motionSamplerTimer > timer2 || // on timer, OR
+       motionLevel != prevMotionLevel ) { // when state changes
     char temp2[3];
     sprintf(temp2, "%d", motionLevel);
     jsonObj1[0] = '\0';
     constructJSONObj("motion", temp2, jsonObj1);
     sendDataOverSerial(jsonObj1);
     motionSamplerTimer = millis();
+    prevMotionLevel = motionLevel;
   }
 
+  // get proximity reading from PIR2
+  motionLevel = digitalRead(motion2Pin);
+  if ( millis() - motionSamplerTimer > timer2 || // on timer, OR
+       motionLevel != prevMotionLevel2 ) { // when state changes
+    char temp2[3];
+    sprintf(temp2, "%d", motionLevel);
+    jsonObj1[0] = '\0';
+    constructJSONObj("motion2", temp2, jsonObj1);
+    sendDataOverSerial(jsonObj1);
+    motionSampler2Timer = millis();
+    prevMotionLevel2 = motionLevel;
+  }
 
   // check for messages from ESP8266 that may have come in from MQTT
   char message[255]; // 255 chars should be sufficient for everyone ;-)
