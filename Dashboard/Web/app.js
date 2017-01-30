@@ -1,10 +1,10 @@
 
 var c1 = document.getElementById("floorPlan"); // static image
-var c2 = document.getElementById("Values"); // draw values on this canvas
+//var c2 = document.getElementById("Values"); // draw values on this canvas
 
 var ctx1 = c1.getContext("2d");
-var ctx2 = c2.getContext("2d");
-
+//var ctx2 = c2.getContext("2d");
+ctx1.scale(1.5,1.5);
 // load icon images
 var imgLight = new Image();
 imgLight.src = "lightbulb.png";
@@ -19,23 +19,20 @@ imgOpen.src = "doorOpen.png";
 var imgClosed = new Image();
 imgClosed.src = "doorClosed.png";
 
-// draw out the floor outlines
-var floor1Name = "Basement";
-drawFloor1(10,10, floor1Name);
-var floor2Name = "Family";
-drawFloor2(200,220, floor2Name);
-var floor3Name = "Bedrooms";
-drawFloor3(430,10, floor3Name);
 
-// set font for temperature updates
-ctx2.font = "16pt Calibri";
-ctx2.fillStyle = "black";
-ctx2.fill();
 
 // websocket callbacks
 window.onload = function() {
 
-    var d = document.getElementById("Values");
+    
+// draw out the floor outlines
+var floor1Name = "Basement Level";
+drawFloor1(10,10, floor1Name);
+var floor2Name = "Family Level";
+drawFloor2(200,220, floor2Name);
+var floor3Name = "Bedroom Level";
+drawFloor3(430,10, floor3Name);
+    var d = document.getElementById("floorPlan");
     var ctx = d.getContext("2d");
 
     // one socket per update for each sensor value
@@ -54,7 +51,7 @@ window.onload = function() {
     s01.onmessage = function(e) {
 
 	var sensorData = JSON.parse(e.data);
-	ctx.font = "16pt Calibri";
+	ctx.font = "italic 16pt Calibri";
 	ctx.fillStyle = "black";
 	var x1, y1;
 	x1 = 50;
@@ -107,16 +104,14 @@ window.onload = function() {
 		    drawMotionOff(ctx, 7800, 7500);
 		break;
 	    case "light2":
-		x1=800; // no action so draw outside boundaries
-		y1=500;
-		break;
+		break; // not implemented
 	    case "motion2":
 		break;
 	    case "temperature":
 		x1 = 415;
 		y1 = 345;
 		break;
-	    case "door1":
+	    case "door":
 	     	if( sensorData.Value == "1") 
 	     	    drawDoorOpen(ctx, 7000,8700);
 	     	
@@ -128,11 +123,11 @@ window.onload = function() {
 	case "3":
 	    switch (sensorData.Measurement) {
 	    case "light":
-		x1 = 700;
+		x1 = 550;
 		y1 = 95;
 		break;
 	    case "motion":
-		x1 = 710;
+		x1 = 560;
 		y1 = 120;
 		if( sensorData.Value == "1")
 		    drawMotionOn(ctx, 10500, 2000);
@@ -140,11 +135,11 @@ window.onload = function() {
 		    drawMotionOff(ctx, 10500, 2000);
 		break;
 	    case "light2":
-		x1 = 550;
+		x1 = 700;
 		y1 = 95;
 		break;
 	    case "motion2":
-		x1 = 560;
+		x1 = 710;
 		y1 = 130;
 		if( sensorData.Value == "1")
 		    drawMotionOn(ctx, 13500, 2000);
@@ -223,7 +218,7 @@ window.onload = function() {
 	    }
     	    break;
 	}
-	ctx.clearRect(x1,y1-15,50,20);
+	ctx.clearRect(x1,y1-15,30,20);
 	if( sensorData.Measurement.substring(0,4) != "door" &&
 	    sensorData.Measurement.substring(0,6) != "motion") {
 	    ctx.fillText( sensorData.Value, x1, y1);
@@ -358,4 +353,16 @@ function drawMotionOff(ctx, x, y) {
     ctx.scale(0.05,0.05);
     ctx.drawImage(imgMotionOff, x, y);
     ctx.scale(20,20);
+}
+
+function drawTemperature(ctx, x, y) {
+    ctx.scale(0.05, 0.05);
+    ctx.drawImage(imgTemp, x, y);
+    ctx.scale( 20,20);
+}
+
+function drawLight(ctx, x, y) {
+    ctx.scale(0.05, 0.05);
+    ctx.drawImage(imgLight, x, y);
+    ctx.scale( 20,20);
 }
