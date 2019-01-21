@@ -2,6 +2,8 @@
 # Visitor alert using pi camera
 #
 # Author: vswamina, September 2017.
+
+# 2019_01_20 Created for modularizing camera parameters
 # 2017_09_10 Updated with multiple changes for sharing
 # 2017_09_30 Modified to support multi platform
 
@@ -46,7 +48,7 @@ WHITE = 255,255,255
 BLACK=10,10,10
 
 # which camera do we use
-camera_port = DEFAULT_CAM
+camera_port = DEFAULT_CAM 
 
 # setup AWS Rekognition client
 client = boto3.client('rekognition')
