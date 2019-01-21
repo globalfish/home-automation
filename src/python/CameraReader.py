@@ -2,6 +2,8 @@
 # Visitor alert using pi camera
 #
 # Author: vswamina, September 2017.
+
+# 2019_01_20 Read images from camera
 # 2017_09_10 Updated with multiple changes for sharing
 # 2017_09_30 Modified to support multi platform
 
@@ -12,12 +14,9 @@ LINUX = 3
 platform = WINDOWS
 
 # With a lot of help from the Internet
-import cv2
-import boto3
+import cv2;
 import json
 import threading
-#import RPi.GPIO as GPIO
-#from espeak import espeak
 import time
 from random import *
 import sys
@@ -47,14 +46,6 @@ BLACK=10,10,10
 
 # which camera do we use
 camera_port = DEFAULT_CAM
-
-# setup AWS Rekognition client
-client = boto3.client('rekognition')
-
-#
-# load images from S3 bucket and create a gallery of known faces
-#
-s3client = boto3.client("s3")
 
 #
 # generic class that's called with a parameter and this then instantiates the
@@ -118,24 +109,6 @@ class VideoCamera:
             print("couldn't make sense of your arguments. Cannot proceed!")
             exit()
             
-
-        # default color for bounding box
-        self.color = RED
-
-        #default coordinates for bounding box
-        self.boxTopLeftX = 0
-        self.boxTopLeftY = 0
-        self.boxBotRightX = 0
-        self.boxBotRightY = 0
-        self.personName = "UNKNOWN"
-
-        # default font for name
-        self.font = cv2.FONT_HERSHEY_SIMPLEX
-
-        # which classifier to use
-        self.faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-        self.faces=[] # initialize else we get an error in self.readFaces
-        self.foundFaces = False
  
         # should thread run or stop
         self.stopped = False
@@ -160,30 +133,6 @@ class VideoCamera:
             
             self.frame=frame.array
             self.rawCapture.truncate(0)
-  
-            self.drawRect(self.boxTopLeftX, self.boxTopLeftY,
-                          self.boxBotRightX, self.boxBotRightY,
-                          self.color)
-      
-            # detect faces
-            self.faces = self.faceCascade.detectMultiScale(
-                self.frame,
-                scaleFactor = 1.1,
-                minNeighbors = 5,
-                minSize = (20, 20)
-                )
-
-            # process each face found
-            for (x,y,w,h) in self.faces:
-
-                # draw bounding box
-                self.drawRect(x, y, x+w, y+h, self.color)
-                cv2.putText(self.frame, self.personName, (x, y-10), self.font, 0.5, self.color, 2)
-
-            if( len(self.faces) > 0):
-                self.foundFaces = True
-            else:
-                self.foundFaces = False
 
             cv2.waitKey(1)
 
@@ -197,53 +146,18 @@ class VideoCamera:
                 return
 
             (self.grabbed, self.frame) = self.camera.read()
-                
-            self.drawRect(self.boxTopLeftX, self.boxTopLeftY,
-                          self.boxBotRightX, self.boxBotRightY,
-                          self.color)
-      
-            # detect faces
-            self.faces = self.faceCascade.detectMultiScale(
-                self.frame,
-                scaleFactor = 1.1,
-                minNeighbors = 5,
-                minSize = (20, 20)
-                )
 
-    
-            # process each face found
-            for (x,y,w,h) in self.faces:
-
-                # draw bounding box
-                self.drawRect(x, y, x+w, y+h, self.color)
-                cv2.putText(self.frame, self.personName, (x, y-10), self.font, 0.5, self.color, 2)
-
-         
-            if( len(self.faces) > 0):
-                self.foundFaces = True
-            else:
-                self.foundFaces = False
-                
             cv2.namedWindow('DoorMonitor', cv2.WINDOW_NORMAL)
             cv2.moveWindow('DoorMonitor', 10, 50)
             cv2.resizeWindow('DoorMonitor', 855,480)
             cv2.imshow('DoorMonitor', self.frame)
-            cv2.waitKey(1)
-
-            
-    def drawRect(self, x1, y1, x2, y2, color):
-        cv2.rectangle(self.frame, (x1, y1), (x2, y2), color, 2)
-        return
-
+            c = cv2.waitKey(1)
+            if ('q' == chr(c & 255) or 'Q' == chr(c & 255)):
+                self.stopped = True
+                self.stop()
     
     def read(self):
         return self.frame
-
-    def readFaces(self):
-        return self.faces
-        
-    def foundFacesInFrame(self):
-        return self.foundFaces
 
     def stop(self):
         self.stopped = True
@@ -252,26 +166,7 @@ class VideoCamera:
 
     def setColor(self, color):
         self.color = color
-        
-    def setBoundingBox(self, x1,y1,x2,y2):
-        self.boxTopLeftX = x1
-        self.boxTopLeftY = y1
-        self.boxBotRightX = x2
-        self.boxBotRightY = y2
 
-    def setName(self, name):
-        self.personName = name
-
-def IsBoundingBoxInFrame(frameSize, box, borderThreshold=50):
-
-    (x1,y1,x2, y2) = box
-    height,width,_ = frameSize
-    if( x1 > borderThreshold and x2 < width-borderThreshold and
-        y1 > borderThreshold and  y1 < height-borderThreshold):
-        return True
-    else:
-        return False
-    
 if( len(sys.argv) < 2 ):
     print("Usage: ",sys.argv[0], " cameraType [user password ipaddr]")
     print("     cameraType = BUILTIN, PI, DLINK2312, DLINK930")
@@ -305,103 +200,15 @@ if(vs == None):
     quit()
 
 vs.start()
-
-faceIdentified = False
 time.sleep(5)
-lastSaveTime = 0 # time when did the last save
-minSaveInterval = 10 # do not save files more often than this
+
 try: 
-    while True:
+    while not vs.stopped:
         
         # say cheese
         camera_capture = vs.read()
         frameDims = camera_capture.shape
 
-        if( not vs.foundFacesInFrame() ):
-
-            faceIdentified = False
-
-        else:
-
-            # get the faces
-            faces = vs.readFaces()
-
-            largestFaceArea = 0
-            largestFaceBox = (0,0,0,0)    
-            # OpenCV has found faces in image
-            for face in faces:
-
-                (x, y, w, h) = face
-                
-                # pick largest face
-                if( w*h > largestFaceArea):
-                    largestFaceBox = (x,y,w,h)
-                    largestFaceArea = w*h
-                    
-                # check if face moved out of frame 
-                faceInFrame = IsBoundingBoxInFrame(frameDims, face)
-
-                # if face moved out of frame then mark as new face
-                if( not faceInFrame ):
-                    faceIdentified = False
-                
-                # if we have not identified the face
-                if( not faceIdentified ):
-                    # encode the image into a known format for Rekognition to process
-                    _, image = cv2.imencode(".png",camera_capture)
-                
-                    # While OpenCV may already have detected a face above, we need Rekognition to
-                    # also detect the face, else we have issues.
-                    response1 = client.detect_faces(
-                        Image={
-                            'Bytes': image.tobytes(),
-                            },
-                        Attributes=['DEFAULT',]
-                    )
-
-                    # has Rekognition found faces?
-                    numFaces = len(response1["FaceDetails"])
-                
-                    if( numFaces > 0): # Yes, Rekognition found faces
-                        response3 = client.search_faces_by_image(
-                            CollectionId='Gallery',
-                            Image={
-                                'Bytes': image.tobytes(),
-                            },
-                        )
-                        # Can Rekognition match faces to known people?
-                        matches = len(response3['FaceMatches'])
-                    
-                        if matches > 0: # looks like Rekognition found a match
-                            person = response3['FaceMatches'][0]['Face']['ExternalImageId']
-                            vs.setName(person)
-                            faceIdentified = True
-                        else:
-                            faceIdentified = False
-
-                                 
-            if( largestFaceArea > 200 and
-                time.time() - lastSaveTime > minSaveInterval):
-
-                print("Saving file with area "+str(largestFaceArea))
-                lastSaveTime = time.time()
-                # store saved face in S3 for 72 hours
-
-                #faceImage = self.frame[y:y+h, x:x+h]
-                _,faceImageFile = cv2.imencode(".png",camera_capture)
-                timeStr = time.strftime("%Y%m%d-%H%M%S")
-                response = s3client.put_object(
-                        Body=faceImageFile.tobytes(),
-                        Bucket="com.vswamina.aws.doorimages",
-                        Key=timeStr+"-front.png")
-                
-            if ( faceIdentified):
-                vs.setColor(GREEN)
-
-            if( not faceIdentified):
-                vs.setColor(RED)
-                vs.setName("UNKNOWN")
-                
 except (KeyboardInterrupt): # expect to be here when keyboard interrupt
     vs.stop()
     
