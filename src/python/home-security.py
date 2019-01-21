@@ -13,7 +13,7 @@ platform = WINDOWS
 
 # With a lot of help from the Internet
 import cv2
-import boto3
+#import boto3
 import json
 import threading
 import time
@@ -49,12 +49,12 @@ BLACK=10,10,10
 camera_port = DEFAULT_CAM
 
 # setup AWS Rekognition client
-client = boto3.client('rekognition')
+#client = boto3.client('rekognition')
 
 #
 # load images from S3 bucket and create a gallery of known faces
 #
-s3client = boto3.client("s3")
+#s3client = boto3.client("s3")
 
 #
 # generic class that's called with a parameter and this then instantiates the
@@ -219,7 +219,7 @@ time.sleep(1)
 #
 # Some confis
 minSaveInterval = 10 # do not save files more often than this many seconds
-frameGrabInterval = 2 # read frame from camera every this many seconds
+frameGrabInterval = 0 # read frame from camera every this many seconds
 motionResetInterval = 5 # reset background every so many seconds for motion detection
 
 # to detect motion we shall look over previous frame
@@ -227,8 +227,8 @@ prevFrame = None
 lastSaveTime = 0 # when did we save the last image
 lastGrabTime = 0 # when did we get the last frame
 lastMotionBaseTime = 0 # when did we reset the motion base
-mqttClient = mqtt.Client()
-mqttClient.connect("192.168.86.74", 1883, 60)
+#mqttClient = mqtt.Client()
+#mqttClient.connect("192.168.86.74", 1883, 60)
 try: 
     while True:
 
@@ -236,7 +236,7 @@ try:
             continue
         
         lastGrabTime = time.time()
-        
+
         # say cheese
         camera_capture = vs.read()
         if( camera_capture is None):
@@ -269,7 +269,7 @@ try:
             (x,y,w,h) = cv2.boundingRect(c)
             cv2.rectangle(currFrame, (x,y), (x+w, y+h), (0, 255,0), 2)
             text = "Motion detected"
-
+            print(text);
         if( len(cnts) > 0):
             print("Found motion")
             sensorData = {}
@@ -277,8 +277,8 @@ try:
             sensorData['sensorId'] = 'basementCam'
             sensorData['sensorType']='motion'
             sensorData['sensorValue']='true'
-            
-            mqttClient.publish("Sensors", json.dumps(sensorData))
+            print(sensorData);
+            #mqttClient.publish("Sensors", json.dumps(sensorData))
             
         cv2.putText(currFrame, text, (10,20),cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)     
         cv2.imshow("Motionsensor", currFrame)
