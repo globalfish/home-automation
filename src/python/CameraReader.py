@@ -147,6 +147,34 @@ class VideoCamera:
             
             self.frame=frame.array
             self.rawCapture.truncate(0)
+          
+            # detect faces
+            self.faces = self.faceCascade.detectMultiScale(
+                self.frame,
+                scaleFactor = 1.3,
+                minNeighbors = 5,
+                minSize = (50,50)
+                )
+            #print("CameraReader: found " + str(len(self.faces)) + " faces.")
+            # process each face found
+            for (x,y,w,h) in self.faces:
+                #print(str(x) + ", " + str(y) + ", " + str(w) + ", " + str(h))
+                # draw bounding box
+                self.drawRect(x, y, x+w, y+h, self.color)
+                cv2.putText(self.frame, self.personName, (x, y-10), self.font, 0.5, self.color, 2)
+
+            if( len(self.faces) > 0):
+                self.foundFaces = True
+            else:
+                self.foundFaces = False
+
+            cv2.namedWindow('DoorMonitor', cv2.WINDOW_NORMAL)
+            #cv2.moveWindow('DoorMonitor', 10, 100)
+            cv2.resizeWindow('DoorMonitor', 800,600)
+            cv2.imshow('DoorMonitor', self.frame)
+            c = cv2.waitKey(1)
+            if ('q' == chr(c & 255) or 'Q' == chr(c & 255)):
+                self.stopped = True
 
             cv2.waitKey(1)
 
