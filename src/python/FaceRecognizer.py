@@ -8,6 +8,7 @@ from ConfigReader import ConfigReader
 import boto3
 import time, sys
 import Gallery
+import subprocess
 
 # define colors
 YELLOW = 255,255,0
@@ -163,6 +164,7 @@ try:
                             person = response3['FaceMatches'][0]['Face']['ExternalImageId']
                             print("found " + person)
                             vs.setName(person)
+                            subprocess.call(['espeak', "Welcome " +person])
                             vs.setColor(GREEN)
                             identifiedFaceInFrame = True
                         else:

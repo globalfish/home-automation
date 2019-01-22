@@ -168,10 +168,12 @@ class VideoCamera:
             else:
                 self.foundFaces = False
 
-            cv2.namedWindow('DoorMonitor', cv2.WINDOW_NORMAL)
-            cv2.moveWindow('DoorMonitor', 10, 10)
-            cv2.resizeWindow('DoorMonitor', 450, 300)
-            cv2.imshow('DoorMonitor', self.frame)
+            windowName = 'FaceRecognizer'
+            cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
+            cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+            #cv2.moveWindow(windowName, 10, 10)
+            #cv2.resizeWindow(windowName, 450, 300)
+            cv2.imshow(windowName, self.frame)
             c = cv2.waitKey(1)
             if ('q' == chr(c & 255) or 'Q' == chr(c & 255)):
                 self.stopped = True
