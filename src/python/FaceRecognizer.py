@@ -84,9 +84,6 @@ imagesBucket = config.awsFacesBucket
 
 Gallery.deleteGallery(rekogClient, galleryName)
 Gallery.createGallery(rekogClient, s3client, galleryName, imagesBucket)
-#
-# setup face detector classifier
-#
 
 # store faces retrieved by classifier
 faces=[]
