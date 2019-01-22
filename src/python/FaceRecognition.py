@@ -34,7 +34,7 @@ def IsBoundingBoxInFrame(frameSize, box, borderThreshold=50):
 # SETUP CAMERA
 #
 # see CameraReader.py for setting up this call
-vs = VideoCamera(2, "192.168.86.131", ("admin", "f1102cosmos"))
+vs = VideoCamera(2, "192.168.86.131", ("user", "password"))
 vs.start()  # start the camera
 time.sleep(5) # wait for seconds for camera to stabilize
 faceIdentified = False
