@@ -129,7 +129,7 @@ class VideoCamera:
 
     def start(self):
         # start thread to read frame
-        if( self.cameraType == PICAMERA):
+        if( self.cameraType == "PICAMERA"):
             threading.Thread(target=self.updatePiCam, args=()).start()
         else:
             threading.Thread(target=self.update, args=()).start()
