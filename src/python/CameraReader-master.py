@@ -86,7 +86,7 @@ class VideoCamera:
                 print("DLINK2312 OK")
                 cameraUrl = arg1
                 authString = arg2
-                streamurl = "http://" + ':'.join(authString) + '@' + cameraUrl + "/video2.mjpg"
+                streamurl = "http://" + ':'.join(authString) + '@' + cameraUrl + "/video1.mjpg"
                 # no additional imports needed, OpenCV3 can deal with the URL
                 self.camera= cv2.VideoCapture(streamurl)
                 (self.grabbed, self.frame) = self.camera.read()
@@ -166,7 +166,7 @@ class VideoCamera:
 
     def setColor(self, color):
         self.color = color
-""" 
+
 if( len(sys.argv) < 2 ):
     print("Usage: ",sys.argv[0], " cameraType [user password ipaddr]")
     print("     cameraType = BUILTIN, PI, DLINK2312, DLINK930")
@@ -211,4 +211,4 @@ try:
 
 except (KeyboardInterrupt): # expect to be here when keyboard interrupt
     vs.stop()
-   """  
+    
