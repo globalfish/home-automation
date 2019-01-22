@@ -175,8 +175,7 @@ class VideoCamera:
             c = cv2.waitKey(1)
             if ('q' == chr(c & 255) or 'Q' == chr(c & 255)):
                 self.stopped = True
-
-            cv2.waitKey(1)
+                
 
     def update(self): # update for other cameras
         # read camera
