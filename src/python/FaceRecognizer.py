@@ -4,8 +4,9 @@
 
 import cv2
 from CameraReader import VideoCamera
+from ConfigReader import ConfigReader
 import boto3
-import time
+import time, sys
 import Gallery
 
 # define colors
@@ -30,13 +31,40 @@ def IsBoundingBoxInFrame(frameSize, box, borderThreshold=50):
     else:
         return False
 
+
+def processCommandLine():
+
+    global vs, config
+    #
+    # read config from file name
+    if( len(sys.argv) == 2):
+        config = ConfigReader(sys.argv[1])
+    else:
+        print("Usage: " + sys.argv[0] + " <nameOfConfigFile>")
+        quit()
+
+    if( config.cameraType == "PICAMERA"):
+        vs = VideoCamera(config.cameraType, (400, 300), 30)
+
+    if( config.cameraType == "BUILTINCAMERA"):
+        vs = VideoCamera(config.cameraType, int(config.cameraPort))
+
+    if( config.cameraType == "DLINK2312" or config.cameraType == "DLINK930"):
+        vs = VideoCamera(config.cameraType, 
+            config.cameraUrl, 
+            (config.cameraUser, config.cameraPassword))
+
+
+#################################################
 #
-# SETUP CAMERA
+#  MAIN CODE STARTS HERE
 #
-# see CameraReader.py for setting up this call
-vs = VideoCamera(2, "192.168.86.131", ("user", "password"))
+#################################################
+
+processCommandLine()
+
 vs.start()  # start the camera
-time.sleep(5) # wait for seconds for camera to stabilize
+time.sleep(1) # wait for seconds for camera to stabilize
 faceIdentified = False
 
 #
@@ -51,40 +79,32 @@ rekogClient = boto3.client('rekognition')
 #
 # setup gallery of faces
 #
-galleryName = "Gallery"
-imagesBucket = "image bucket"
+galleryName = config.awsGallery
+imagesBucket = config.awsFacesBucket
+
 Gallery.deleteGallery(rekogClient, galleryName)
 Gallery.createGallery(rekogClient, s3client, galleryName, imagesBucket)
 #
 # setup face detector classifier
 #
-# this is the classifier that detects faces from image
-faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
 # store faces retrieved by classifier
 faces=[]
 foundFacesInFrame = False
 identifiedFaceInFrame = False
+stopped = False
 
 try: 
-    while True:
-        
+    while not stopped:
+
         # say cheese; get a frame from camera
         rawFrame = vs.read()
         frameDims = rawFrame.shape
 
-        # process frame if needed
-        processedFrame = rawFrame
-
-        # detect faces
-        faces = faceCascade.detectMultiScale(
-            processedFrame,
-            scaleFactor = 1.1,
-            minNeighbors = 5,
-            minSize = (20,20)
-        )
-        foundFacesInFrame = (len(faces) > 0)
-
-        if( not foundFacesInFrame ):
+       # get the faces
+        faces = vs.readFaces()
+        
+        if( not vs.foundFacesInFrame() ):
             identifiedFaceInFrame = False
         else:  # OpenCV has found faces in image
 
@@ -94,9 +114,7 @@ try:
             # process each face
             for face in faces:
 
-                # draw bounding box (for visual feedback only)
                 (x, y, w, h) = face
-                drawRect(rawFrame,x,y,x+w,y+h,YELLOW)
 
                 # pick largest face
                 if( w*h > largestFaceArea):
@@ -114,7 +132,7 @@ try:
                 if( not identifiedFaceInFrame ):
 
                     # encode the image into a known format for Rekognition to process
-                    _, rekogInputFrame = cv2.imencode(".png",processedFrame)
+                    _, rekogInputFrame = cv2.imencode(".png",rawFrame)
                 
                     # While OpenCV may already have detected a face above, we need Rekognition to
                     # also detect the face, else we have issues.
@@ -165,6 +183,10 @@ try:
 
             if( not faceIdentified):
                 vs.setColor(RED)
+
+            stopped = vs.stopped
+            if(stopped):
+                vs.stop()
 
 except():
     print("caught exception")
