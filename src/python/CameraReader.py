@@ -191,7 +191,7 @@ class VideoCamera:
             # detect faces
             self.faces = self.faceCascade.detectMultiScale(
                 self.frame,
-                scaleFactor = 1.3,
+                scaleFactor = 1.1,
                 minNeighbors = 5,
                 minSize = (50,50)
                 )

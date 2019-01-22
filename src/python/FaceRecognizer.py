@@ -65,7 +65,6 @@ processCommandLine()
 
 vs.start()  # start the camera
 time.sleep(1) # wait for seconds for camera to stabilize
-faceIdentified = False
 
 #
 # setup AWS S3 client (to retrieve images that are stored there)
@@ -100,9 +99,12 @@ try:
 
        # get the faces
         faces = vs.readFaces()
-        
+
         if( not vs.foundFacesInFrame() ):
             identifiedFaceInFrame = False
+            faceInFrame = False
+
+
         else:  # OpenCV has found faces in image
 
             largestFaceArea = 0
@@ -124,12 +126,15 @@ try:
                 # if face moved out of frame then mark as new face
                 if( not faceInFrame ):
                     identifiedFaceInFrame = False
-                
+                    print("face moved out of frame")
                 # if we have not identified the face
                 if( not identifiedFaceInFrame ):
+                    print("cannot identify face")
+
+                    roi = rawFrame[y:y+h, x:x+w]
 
                     # encode the image into a known format for Rekognition to process
-                    _, rekogInputFrame = cv2.imencode(".png",rawFrame)
+                    _, rekogInputFrame = cv2.imencode(".png",roi)
                 
                     # While OpenCV may already have detected a face above, we need Rekognition to
                     # also detect the face, else we have issues.
@@ -157,29 +162,18 @@ try:
                         if matches > 0: # looks like Rekognition found a match
                             person = response3['FaceMatches'][0]['Face']['ExternalImageId']
                             print("found " + person)
+                            vs.setName(person)
+                            vs.setColor(GREEN)
                             identifiedFaceInFrame = True
                         else:
                             identifiedFaceInFrame = False 
-            # if( largestFaceArea > 200 and
-            #     time.time() - lastSaveTime > minSaveInterval):
-
-            #     print("Saving file with area "+str(largestFaceArea))
-            #     lastSaveTime = time.time()
-            #     # store saved face in S3 for 72 hours
-
-            #     #faceImage = self.frame[y:y+h, x:x+h]
-            #     _,faceImageFile = cv2.imencode(".png",camera_capture)
-            #     timeStr = time.strftime("%Y%m%d-%H%M%S")
-            #     response = s3client.put_object(
-            #             Body=faceImageFile.tobytes(),
-            #             Bucket="image bucket out",
-            #             Key=timeStr+"-front.png") 
 
             if (identifiedFaceInFrame):
                 vs.setColor(GREEN)
 
-            if( not faceIdentified):
+            if( not identifiedFaceInFrame):
                 vs.setColor(RED)
+                vs.setName("UNKNOWN")
 
             stopped = vs.stopped
             if(stopped):
