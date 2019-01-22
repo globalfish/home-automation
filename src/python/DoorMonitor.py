@@ -394,7 +394,7 @@ try:
                 timeStr = time.strftime("%Y%m%d-%H%M%S")
                 response = s3client.put_object(
                         Body=faceImageFile.tobytes(),
-                        Bucket="com.vswamina.aws.doorimages",
+                        Bucket="images bucket out",
                         Key=timeStr+"-front.png")
                 
             if ( faceIdentified):
