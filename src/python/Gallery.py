@@ -30,7 +30,7 @@ def createGallery(rekogClient, s3client, galleryName, imagesBucket):
         imageFileName = image["Key"]
         # use filename as name of face in the image, e.g. JohnDoe.png
         imageId = imageFileName.split(".")[0]
-
+        print("Indexing..." + imageId)
         rekogClient.index_faces(
             CollectionId=galleryName,
             Image = {
