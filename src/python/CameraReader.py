@@ -129,6 +129,7 @@ class VideoCamera:
         self.age = "UNKNOWN"
         self.gender = "UNKNOWN"
         self.emotion = "UNKNOWN"
+        self.distance = "UNKNOWN"
 
     def start(self):
         # start thread to read frame
@@ -174,6 +175,7 @@ class VideoCamera:
             cv2.putText(self.frame, self.age, (5,20), self.font, 0.5, self.color,2)
             cv2.putText(self.frame, self.gender, (5,40), self.font, 0.5, self.color,2)
             cv2.putText(self.frame, self.emotion, (5,60), self.font, 0.5, self.color,2)
+            cv2.putText(self.frame, self.distance, (5, 80), self.font, 0.5, self.color, 2)
             windowName = 'FaceRecognizer'
             cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
             cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
@@ -219,10 +221,11 @@ class VideoCamera:
             cv2.putText(self.frame, self.age, (5,20), self.font, 0.5, self.color,2)
             cv2.putText(self.frame, self.gender, (5,40), self.font, 0.5, self.color,2)
             cv2.putText(self.frame, self.emotion, (5,60), self.font, 0.5, self.color,2)
+            cv2.putText(self.frame, str(self.distance) + " inches", (5, 80), self.font, 0.5, self.color, 2)
             windowName = 'FaceRecognizer'
             cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
             #cv2.moveWindow(windowName', 10, 100)
-            #cv2.resizeWindow(windowName, 800,600)
+            cv2.resizeWindow(windowName, 800,600)
             cv2.imshow(windowName, self.frame)
             c = cv2.waitKey(1)
             if ('q' == chr(c & 255) or 'Q' == chr(c & 255)):
@@ -264,6 +267,8 @@ class VideoCamera:
     def setEmotion(self, emotion):
         self.emotion = emotion
 
+    def setDistance(self, distance):
+        self.distance = distance
         
     def setName(self, name):
         self.personName = name

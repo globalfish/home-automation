@@ -130,7 +130,17 @@ try:
                 if( w*h > largestFaceArea):
                     largestFaceBox = (x,y,w,h)
                     largestFaceArea = w*h
-                    
+
+                frameWidth,frameHeight,_ = frameDims
+                frameArea = frameWidth * frameHeight
+                #
+                # scaleFactor is empirical value that is function of camera
+                #
+                scaleFactor = 1.2
+                distanceFromCameraInches = int(scaleFactor * frameArea/largestFaceArea)
+                #print("distance = " + str(distanceFromCameraInches))
+                vs.setDistance(distanceFromCameraInches)
+                
                 # check if face moved out of frame 
                 faceInFrame = IsBoundingBoxInFrame(frameDims, face)
                 #print("Face in frame = " + str(faceInFrame))
@@ -198,7 +208,7 @@ try:
                             person = response3['FaceMatches'][0]['Face']['ExternalImageId']
                             print("found " + person)
                             vs.setName(person)
-                            subprocess.call(['espeak', "Welcome " +person])
+                            #subprocess.call(['espeak', "Welcome " +person])
                             vs.setColor(GREEN)
                             identifiedFaceInFrame = True
                         else:
