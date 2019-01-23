@@ -65,7 +65,7 @@ class VideoCamera:
                 camera_port = arg1
                 # no additional imports needed, OpenCV3 can deal with cameras
                 self.camera = cv2.VideoCapture(arg1)
-                self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 900)
+                self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
                 self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
                 (self.grabbed, self.frame) = self.camera.read()
             else:
@@ -126,6 +126,9 @@ class VideoCamera:
         # default font for name
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
+        self.age = "UNKNOWN"
+        self.gender = "UNKNOWN"
+        self.emotion = "UNKNOWN"
 
     def start(self):
         # start thread to read frame
@@ -168,6 +171,9 @@ class VideoCamera:
             else:
                 self.foundFaces = False
 
+            cv2.putText(self.frame, self.age, (5,20), self.font, 0.5, self.color,2)
+            cv2.putText(self.frame, self.gender, (5,40), self.font, 0.5, self.color,2)
+            cv2.putText(self.frame, self.emotion, (5,60), self.font, 0.5, self.color,2)
             windowName = 'FaceRecognizer'
             cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
             cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
@@ -193,7 +199,7 @@ class VideoCamera:
             # detect faces
             self.faces = self.faceCascade.detectMultiScale(
                 self.frame,
-                scaleFactor = 1.1,
+                scaleFactor = 1.3,
                 minNeighbors = 5,
                 minSize = (50,50)
                 )
@@ -210,10 +216,14 @@ class VideoCamera:
             else:
                 self.foundFaces = False
 
-            cv2.namedWindow('DoorMonitor', cv2.WINDOW_NORMAL)
-            #cv2.moveWindow('DoorMonitor', 10, 100)
-            cv2.resizeWindow('DoorMonitor', 800,600)
-            cv2.imshow('DoorMonitor', self.frame)
+            cv2.putText(self.frame, self.age, (5,20), self.font, 0.5, self.color,2)
+            cv2.putText(self.frame, self.gender, (5,40), self.font, 0.5, self.color,2)
+            cv2.putText(self.frame, self.emotion, (5,60), self.font, 0.5, self.color,2)
+            windowName = 'FaceRecognizer'
+            cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
+            #cv2.moveWindow(windowName', 10, 100)
+            #cv2.resizeWindow(windowName, 800,600)
+            cv2.imshow(windowName, self.frame)
             c = cv2.waitKey(1)
             if ('q' == chr(c & 255) or 'Q' == chr(c & 255)):
                 self.stopped = True
@@ -244,6 +254,15 @@ class VideoCamera:
         self.boxTopLeftY = y1
         self.boxBotRightX = x2
         self.boxBotRightY = y2
+
+    def setAge(self, age):
+        self.age = age
+    
+    def setGender(self, gender):
+        self.gender = gender
+
+    def setEmotion(self, emotion):
+        self.emotion = emotion
 
         
     def setName(self, name):

@@ -9,6 +9,7 @@ import boto3
 import time, sys
 import Gallery
 import subprocess
+import json
 
 # define colors
 YELLOW = 255,255,0
@@ -23,8 +24,9 @@ def drawRect(frame,x1, y1, x2, y2, color):
     return
 
 def IsBoundingBoxInFrame(frameSize, box, borderThreshold=50):
-
-    (x1,y1,x2, y2) = box
+    (x1,y1,w,h) = box
+    x2 = x1 + w
+    y2 = y1 + h
     height,width,_ = frameSize
     if( x1 > borderThreshold and x2 < width-borderThreshold and
         y1 > borderThreshold and  y1 < height-borderThreshold):
@@ -82,8 +84,8 @@ rekogClient = boto3.client('rekognition')
 galleryName = config.awsGallery
 imagesBucket = config.awsFacesBucket
 
-Gallery.deleteGallery(rekogClient, galleryName)
-Gallery.createGallery(rekogClient, s3client, galleryName, imagesBucket)
+#Gallery.deleteGallery(rekogClient, galleryName)
+#Gallery.createGallery(rekogClient, s3client, galleryName, imagesBucket)
 
 # store faces retrieved by classifier
 faces=[]
@@ -94,17 +96,25 @@ stopped = False
 try: 
     while not stopped:
 
+        faceFoundDecayTime = 20
         # say cheese; get a frame from camera
         rawFrame = vs.read()
         frameDims = rawFrame.shape
 
-       # get the faces
+        # get the faces
         faces = vs.readFaces()
 
-        if( not vs.foundFacesInFrame() ):
-            identifiedFaceInFrame = False
-            faceInFrame = False
+        faceInFrame = False
 
+        if( not vs.foundFacesInFrame() ):
+            #print("OpenCV did not find faces in frame")
+            if( True or faceFoundDecayTime == 0):
+                identifiedFaceInFrame = False
+                faceFoundDecayTime = 20
+            else:
+                faceFoundDecayTime  = faceFoundDecayTime - 1
+                if( faceFoundDecayTime <0 ):
+                    faceFoundDecayTime = 0
 
         else:  # OpenCV has found faces in image
 
@@ -123,7 +133,7 @@ try:
                     
                 # check if face moved out of frame 
                 faceInFrame = IsBoundingBoxInFrame(frameDims, face)
-
+                #print("Face in frame = " + str(faceInFrame))
                 # if face moved out of frame then mark as new face
                 if( not faceInFrame ):
                     identifiedFaceInFrame = False
@@ -131,7 +141,8 @@ try:
                 # if we have not identified the face
                 if( not identifiedFaceInFrame ):
                     print("cannot identify face")
-
+                    vs.setColor(RED)
+                    vs.setName("UNKNOWN")   
                     roi = rawFrame[y:y+h, x:x+w]
 
                     # encode the image into a known format for Rekognition to process
@@ -143,13 +154,36 @@ try:
                         Image={
                             'Bytes': rekogInputFrame.tobytes(),
                             },
-                        Attributes=['DEFAULT',]
+                        Attributes=['ALL',]
                     )
 
                     # has Rekognition found faces?
                     numFaces = len(rekogFaces["FaceDetails"])
                 
                     if( numFaces > 0): # Yes, Rekognition found faces
+
+                        #print(json.dumps(rekogFaces["FaceDetails"][0], indent=4, sort_keys=True))
+                        
+                        #
+                        # Get face attributes
+                        #
+                        age = str(rekogFaces["FaceDetails"][0]['AgeRange']['Low']) + ' to ' + str(rekogFaces["FaceDetails"][0]['AgeRange']['High'])
+                        currentConfidenceLevel = 0
+                        currentEmotion = "NONE"
+                        for emotion in rekogFaces["FaceDetails"][0]['Emotions']:
+                            if emotion["Confidence"] > currentConfidenceLevel:
+                                currentConfidenceLevel = emotion["Confidence"]
+                                currentEmotion = emotion["Type"]
+
+                        genderConfidence = str(rekogFaces["FaceDetails"][0]["Gender"]["Confidence"])
+                        if(float(genderConfidence) > 90.0):
+                            gender = str(rekogFaces["FaceDetails"][0]["Gender"]["Value"])
+                        else:
+                            gender = "UNKNOWN"
+                       
+                        vs.setAge(age)
+                        vs.setEmotion(currentEmotion)
+                        vs.setGender(gender)
                         response3 = rekogClient.search_faces_by_image(
                             CollectionId='Gallery',
                             Image={

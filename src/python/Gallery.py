@@ -9,6 +9,7 @@ def deleteGallery(rekogClient, galleryName):
     # delete previous collection, if any
     #
     try:
+        print("Deleting gallery..." + galleryName)
         rekogClient.delete_collection( CollectionId = galleryName)
     except Exception:
         print("Caught an exception when deleting... Continuing...")
