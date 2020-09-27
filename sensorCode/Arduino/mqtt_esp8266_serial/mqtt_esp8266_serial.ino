@@ -26,48 +26,45 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
+
 // Update these with values suitable for your network.
 
 const char* ssid = "ssid";
 const char* password = "password";
-const char* mqtt_server = "mqtt_server";
-char* mgmtTopic = "SensorManagement";
-char* sensorDataTopic = "SensorData";
+const char* mqtt_server = "192.168.1.22";
+const char* sensorDataTopic = "/home/sensors/multi10";
+const char* mgmtTopic = "/home/sensors/multi10/mgmt";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+
 long lastMsg = 0;
 char msg[50];
 int value = 0;
 
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
-  Serial.begin(9600);
+  Serial.begin(19200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
+
 }
 
 void setup_wifi() {
 
   delay(10);
   // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
   }
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  //Serial.println(WiFi.localIP());
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -75,12 +72,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
   processAction((char*) payload, length);
 }
 
+
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
     //Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client88")) {
+    if (client.connect("multi10")) {
       //tempMessage = "Connected to network with IP " + WiFi.localIP().toString();
       char tempMessage[80] = "";
       strcat(tempMessage, "Connected to network with IP ");
@@ -90,7 +88,7 @@ void reconnect() {
       strcat(tempMessage, myIPString2);
       client.publish(mgmtTopic, tempMessage);
       // ... and resubscribe
-      client.subscribe("inTopic");
+      client.subscribe(sensorDataTopic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -100,6 +98,7 @@ void reconnect() {
     }
   }
 }
+
 void loop() {
 
   if (!client.connected()) {
@@ -107,10 +106,11 @@ void loop() {
   }
   client.loop();
 
+  
   char message[255] = "";
   int indx = 0;
   while (Serial.available() && indx < 255) {
-    delay(1);
+    //delay(1);
     if (Serial.available() > 0) {
       char c = Serial.read();
       message[indx] = c;
@@ -118,6 +118,7 @@ void loop() {
     }
     message[indx] = '\0';
   }
+  
   if ( strstr(message, "INFO") != NULL) {
     char heartBeatMsg[335] = ""; // since message can be max of 255 and ack is max of 80
     strcat(heartBeatMsg, message);
@@ -125,12 +126,14 @@ void loop() {
     char myIPString[24] = "";
     IPAddress myIP = WiFi.localIP();
     sprintf(myIPString, "%d.%d.%d.%d", myIP[0], myIP[1], myIP[2], myIP[3]);
-    strcat(heartBeatMsg, myIPString);
+    strcat(heartBeatMsg, myIPString);   
     strcat(heartBeatMsg, "\0");
-    client.publish(mgmtTopic, heartBeatMsg);
+    //client.publish(mgmtTopic, heartBeatMsg);
   }
   else {
-    client.publish(sensorDataTopic, message);
+    if( message[0] != '\0')
+      client.publish(sensorDataTopic, message);
+      delay(500);
   }
 }
 //
@@ -140,7 +143,7 @@ void loop() {
 
 void processAction(char *actionString, int length) {
 
-  char *actionKeyword = "ACTION"; // forward to Arduino
+  const char *actionKeyword = "ACTION"; // forward to Arduino
   if ( strstr(actionString, actionKeyword) != NULL)
     for (int i = 0; i < length; i++) {
       Serial.print(actionString[i]); // sends to Arduino over serial port
