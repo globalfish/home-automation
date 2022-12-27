@@ -161,18 +161,18 @@ void loop() {
     case 'D': setMacroMode(3); Serial.print(customKey); break;
 
     // Run the macro function assigned to the key, based on the mode that has been selected
-    case '1': macroFunction[getMacroMode()][0](); Serial.print(customKey); break;
-    case '2': macroFunction[getMacroMode()][1](); Serial.print(customKey); break;
-    case '3': macroFunction[getMacroMode()][2](); Serial.print(customKey); break;
-    case '4': macroFunction[getMacroMode()][3](); Serial.print(customKey); break;
-    case '5': macroFunction[getMacroMode()][4](); Serial.print(customKey); break;
-    case '6': macroFunction[getMacroMode()][5](); Serial.print(customKey); break;
-    case '7': macroFunction[getMacroMode()][6](); Serial.print(customKey); break; 
-    case '8': macroFunction[getMacroMode()][7](); Serial.print(customKey); break;
-    case '9': macroFunction[getMacroMode()][8](); Serial.print(customKey); break;
-    case '*': macroFunction[getMacroMode()][9](); Serial.print(customKey); break;
-    case '0': macroFunction[getMacroMode()][10](); Serial.print(customKey); break;
-    case '#': macroFunction[getMacroMode()][11](); Serial.print(customKey); break;
+    case '1': if (macroFunction[getMacroMode()][0] != NULL) {macroFunction[getMacroMode()][0]();}; break;
+    case '2': if (macroFunction[getMacroMode()][1] != NULL) {macroFunction[getMacroMode()][1]();}; break;
+    case '3': if (macroFunction[getMacroMode()][2] != NULL) {macroFunction[getMacroMode()][2]();}; break;
+    case '4': if (macroFunction[getMacroMode()][3] != NULL) {macroFunction[getMacroMode()][3]();}; break;
+    case '5': if (macroFunction[getMacroMode()][4] != NULL) {macroFunction[getMacroMode()][4]();}; break;
+    case '6': if (macroFunction[getMacroMode()][5] != NULL) {macroFunction[getMacroMode()][5]();}; break;
+    case '7': if (macroFunction[getMacroMode()][6] != NULL) {macroFunction[getMacroMode()][6]();}; break; 
+    case '8': if (macroFunction[getMacroMode()][7] != NULL) {macroFunction[getMacroMode()][7]();}; break;
+    case '9': if (macroFunction[getMacroMode()][8] != NULL) {macroFunction[getMacroMode()][8]();}; break;
+    case '*': if (macroFunction[getMacroMode()][9] != NULL) {macroFunction[getMacroMode()][9]();}; break;
+    case '0': if (macroFunction[getMacroMode()][10] != NULL) {macroFunction[getMacroMode()][10]();}; break;
+    case '#': if (macroFunction[getMacroMode()][11] != NULL) {macroFunction[getMacroMode()][11]();}; break;
   }
 }
 
