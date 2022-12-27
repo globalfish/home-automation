@@ -46,8 +46,8 @@ struct t_modeInfo {
 // Display labels for the macro display. This will correspond to macro functions initializer.
 struct t_modeInfo MODE_LABELS[ROWS] = {
   { "WIND", { "TASK", "FILE", "ONE ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
-  { "POWR", { "TASK", "FILE", "ONE ", " -- ", " -- ", " -- ", "RECT", "CIRC", "ARRW", "COPY", "PAST", "SCRN" } },
-  { "MTNG", { "TASK", "FILE", "ONE ", "MUTE", "UNMT", " -- ", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
+  { "POWR", { "TASK", "FILE", "ONE ", "TEXT", " -- ", " -- ", "RECT", "CIRC", "ARRW", "COPY", "PAST", "SCRN" } },
+  { "MTNG", { "TASK", "FILE", "ONE ", "MUTE", " -- ", " -- ", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
   { "LINX", { " -- ", " -- ", " -- ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "SCPY", "SPST", "SCRN" } }
 };
 
@@ -61,9 +61,12 @@ void WIN_screenCapture(void);
 void WIN_password(void);
 void POWERPOINT_circle(void);
 void POWERPOINT_rectangle(void);
-void POWERPNT_arrow(void);
+void POWERPOINT_arrow(void);
+void POWERPOINT_textBox(void);
+void WIN_mute_toggle(void);
 void SHIFT_copy(void);
 void SHIFT_paste(void);
+void LINUX_password(void);
 
 // functions for each key in each of the macro modes. This will correspond to macro labels.
 void (*macroFunction[4][12])(void) = {
@@ -72,15 +75,15 @@ void (*macroFunction[4][12])(void) = {
       0, 0, 0, 
       WIN_copy, WIN_paste, WIN_screenCapture},
     { WIN_taskmanager, WIN_filexplorer, WIN_onenote, 
-      0, 0, 0, 
-      POWERPOINT_rectangle, POWERPOINT_circle, POWERPNT_arrow, 
+      POWERPOINT_textBox, 0, 0, 
+      POWERPOINT_rectangle, POWERPOINT_circle, POWERPOINT_arrow, 
       WIN_copy, WIN_paste, WIN_screenCapture},
     { WIN_taskmanager, WIN_filexplorer, WIN_onenote, 
-      0, 0, 0, 
+      WIN_mute_toggle, 0, 0, 
       0, 0, 0, 
       WIN_copy, WIN_paste, WIN_screenCapture },
     { 0, 0, 0, 
-      0, 0, 0, 
+      LINUX_password, 0, 0, 
       0, 0, 0, 
       SHIFT_copy, SHIFT_paste, WIN_screenCapture } 
   };
@@ -208,7 +211,7 @@ void WIN_paste() {
   Keyboard.releaseAll();
 }
 
-void POWERPNT_arrow() {
+void POWERPOINT_arrow() {
   hitKey(KEY_LEFT_ALT);
   hitKey('n');
   hitKey('s');
@@ -244,6 +247,12 @@ void POWERPOINT_rectangle() {
   hitKey(KEY_RETURN);
 }
 
+void POWERPOINT_textBox() {
+  hitKey(KEY_LEFT_ALT);
+  hitKey('n');
+  hitKey('x');  
+}
+
 void WIN_password() {
   Keyboard.print("********");
   delay(100);
@@ -270,6 +279,13 @@ void WIN_taskmanager() {
   hitKey('t');
 }
 
+void WIN_mute_toggle() {
+  holdKey(KEY_LEFT_GUI);
+  holdKey(KEY_LEFT_ALT);
+  hitKey('k');
+  Keyboard.releaseAll();
+}
+
 void SHIFT_copy() {
   holdKey(KEY_LEFT_CTRL);
   holdKey(KEY_LEFT_SHIFT);
@@ -282,4 +298,10 @@ void SHIFT_paste() {
   holdKey(KEY_LEFT_SHIFT);
   holdKey('v');
   Keyboard.releaseAll();
+}
+
+void LINUX_password() {
+  Keyboard.print("venkat");
+  delay(100);
+  hitKey(KEY_RETURN);
 }
