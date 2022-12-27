@@ -48,7 +48,7 @@ struct t_modeInfo MODE_LABELS[ROWS] = {
   { "WIND", { "TASK", "FILE", "ONE ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
   { "POWR", { "TASK", "FILE", "ONE ", " -- ", " -- ", " -- ", "RECT", "CIRC", "ARRW", "COPY", "PAST", "SCRN" } },
   { "MTNG", { "TASK", "FILE", "ONE ", "MUTE", "UNMT", " -- ", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
-  { "LINX", { " -- ", " -- ", " -- ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } }
+  { "LINX", { " -- ", " -- ", " -- ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "SCPY", "SPST", "SCRN" } }
 };
 
 // forward declare functions so we can initialize macro functions 
@@ -70,19 +70,19 @@ void (*macroFunction[4][12])(void) = {
     { WIN_taskmanager, WIN_filexplorer, WIN_onenote, 
       WIN_password, 0, 0, 
       0, 0, 0, 
-      0, 0, 0},
+      WIN_copy, WIN_paste, WIN_screenCapture},
     { WIN_taskmanager, WIN_filexplorer, WIN_onenote, 
       0, 0, 0, 
       POWERPOINT_rectangle, POWERPOINT_circle, POWERPNT_arrow, 
-      0, 0, 0 },
+      WIN_copy, WIN_paste, WIN_screenCapture},
     { WIN_taskmanager, WIN_filexplorer, WIN_onenote, 
       0, 0, 0, 
       0, 0, 0, 
-      0, 0, 0 },
+      WIN_copy, WIN_paste, WIN_screenCapture },
     { 0, 0, 0, 
       0, 0, 0, 
       0, 0, 0, 
-     0, 0, 0, } 
+      SHIFT_copy, SHIFT_paste, WIN_screenCapture } 
   };
 
 void setup() {
