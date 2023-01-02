@@ -59,6 +59,7 @@ void WIN_copy(void);
 void WIN_paste(void);
 void WIN_screenCapture(void);
 void WIN_password(void);
+void WIN_reboot(void);
 void POWERPOINT_circle(void);
 void POWERPOINT_rectangle(void);
 void POWERPOINT_arrow(void);
@@ -96,7 +97,8 @@ struct t_macroFunction {
   { "SHAR", TEAMS_share_toggle },
   { "SCPY", SHIFT_copy },
   { "SPST", SHIFT_paste },
-  { "CHAT", TEAMS_chat }
+  { "CHAT", TEAMS_chat },
+  { "REBT", WIN_reboot }
 };
 
 // Arrange labels for each mode. The macro functions will be called automatically based on the label text below. 
@@ -105,7 +107,7 @@ struct t_modeInfo {
   String modeName;
   String label[ROWS * (COLS - 1)];
 } LABEL_MAP[ROWS] = {
-  { "WIND", { "TASK", "FILE", "1NOT", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
+  { "WIND", { "TASK", "FILE", "1NOT", "PSWD", " -- ", "REBT", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
   { "POWR", { "TASK", "FILE", "1NOT", "TEXT", " -- ", " -- ", "RECT", "CIRC", "ARRW", "COPY", "PAST", "SCRN" } },
   { "MTNG", { "TASK", "FILE", "1NOT", "CAME", "MUTE", "SHAR", "CHAT", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
   { "LINX", { " -- ", " -- ", " -- ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "SCPY", "SPST", "SCRN" } }
@@ -347,6 +349,15 @@ void WIN_password() {
   hitKey(KEY_RETURN);
 }
 
+void WIN_reboot() {
+
+  holdKey(KEY_LEFT_ALT);
+  holdKey(KEY_LEFT_CTRL);
+  holdKey( KEY_DELETE);
+  delay(500);
+  Keyboard.releaseAll();
+}
+
 void WIN_onenote() {
   holdKey(KEY_LEFT_GUI);
   holdKey(KEY_LEFT_SHIFT);
@@ -367,6 +378,10 @@ void WIN_taskmanager() {
   hitKey('t');
 }
 
+void WIN_teams() {
+
+  holdKey(u_int8_t key) 
+}
 void TEAMS_mute_toggle() {
   holdKey(KEY_LEFT_CTRL);
   holdKey(KEY_LEFT_SHIFT);
