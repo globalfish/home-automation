@@ -68,6 +68,7 @@ void TEAMS_camera_toggle(void);
 void TEAMS_mute_toggle(void);
 void TEAMS_share_toggle(void);
 void TEAMS_chat(void);
+void TEAMS_startTeams(void);
 void SHIFT_copy(void);
 void SHIFT_paste(void);
 void LINUX_password(void);
@@ -95,10 +96,11 @@ struct t_macroFunction {
   { "CAME", TEAMS_camera_toggle },
   { "MUTE", TEAMS_mute_toggle },
   { "SHAR", TEAMS_share_toggle },
+  { "TEAM", TEAMS_startTeams },
   { "SCPY", SHIFT_copy },
   { "SPST", SHIFT_paste },
   { "CHAT", TEAMS_chat },
-  { "REBT", WIN_reboot }
+  { "REBT", WIN_reboot },
 };
 
 // Arrange labels for each mode. The macro functions will be called automatically based on the label text below. 
@@ -109,7 +111,7 @@ struct t_modeInfo {
 } LABEL_MAP[ROWS] = {
   { "WIND", { "TASK", "FILE", "1NOT", "PSWD", " -- ", "REBT", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
   { "POWR", { "TASK", "FILE", "1NOT", "TEXT", " -- ", " -- ", "RECT", "CIRC", "ARRW", "COPY", "PAST", "SCRN" } },
-  { "MTNG", { "TASK", "FILE", "1NOT", "CAME", "MUTE", "SHAR", "CHAT", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
+  { "MTNG", { "TEAM", "FILE", "1NOT", "CAME", "MUTE", "SHAR", "CHAT", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
   { "LINX", { " -- ", " -- ", " -- ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "SCPY", "SPST", "SCRN" } }
 };
 
@@ -378,10 +380,17 @@ void WIN_taskmanager() {
   hitKey('t');
 }
 
-void WIN_teams() {
+void WIN_startTeams() {
 
-  holdKey(u_int8_t key) 
+  holdKey(KEY_LEFT_GUI);
+  hitKey('s');
+  Keyboard.releaseAll();
+  Keyboard.print("teams");
+  delay(100);
+  hitKey(KEY_RETURN);
 }
+
+
 void TEAMS_mute_toggle() {
   holdKey(KEY_LEFT_CTRL);
   holdKey(KEY_LEFT_SHIFT);
