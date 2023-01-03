@@ -60,6 +60,7 @@ void WIN_paste(void);
 void WIN_screenCapture(void);
 void WIN_password(void);
 void WIN_reboot(void);
+void WIN_startPowerPoint(void);
 void POWERPOINT_circle(void);
 void POWERPOINT_rectangle(void);
 void POWERPOINT_arrow(void);
@@ -101,6 +102,7 @@ struct t_macroFunction {
   { "SPST", SHIFT_paste },
   { "CHAT", TEAMS_chat },
   { "REBT", WIN_reboot },
+  { "POWR", WIN_startPowerPoint }
 };
 
 // Arrange labels for each mode. The macro functions will be called automatically based on the label text below. 
@@ -110,7 +112,7 @@ struct t_modeInfo {
   String label[ROWS * (COLS - 1)];
 } LABEL_MAP[ROWS] = {
   { "WIND", { "TASK", "FILE", "1NOT", "PSWD", " -- ", "REBT", " -- ", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
-  { "POWR", { "TASK", "FILE", "1NOT", "TEXT", " -- ", " -- ", "RECT", "CIRC", "ARRW", "COPY", "PAST", "SCRN" } },
+  { "POWR", { "POWR", "FILE", "1NOT", "TEXT", " -- ", " -- ", "RECT", "CIRC", "ARRW", "COPY", "PAST", "SCRN" } },
   { "MTNG", { "TEAM", "FILE", "1NOT", "CAME", "MUTE", "SHAR", "CHAT", " -- ", " -- ", "COPY", "PAST", "SCRN" } },
   { "LINX", { " -- ", " -- ", " -- ", "PSWD", " -- ", " -- ", " -- ", " -- ", " -- ", "SCPY", "SPST", "SCRN" } }
 };
@@ -303,6 +305,15 @@ void WIN_paste() {
   Keyboard.releaseAll();
 }
 
+void WIN_startPowerPoint() {
+  holdKey(KEY_LEFT_GUI);
+  hitKey('s');
+  Keyboard.releaseAll();
+  Keyboard.print("powerpoint");
+  delay(100);
+  hitKey(KEY_RETURN);
+}
+
 void POWERPOINT_arrow() {
   hitKey(KEY_LEFT_ALT);
   hitKey('n');
@@ -380,8 +391,7 @@ void WIN_taskmanager() {
   hitKey('t');
 }
 
-void WIN_startTeams() {
-
+void TEAMS_startTeams() {
   holdKey(KEY_LEFT_GUI);
   hitKey('s');
   Keyboard.releaseAll();
